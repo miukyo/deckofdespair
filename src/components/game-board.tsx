@@ -24,12 +24,14 @@ export default function GameBoard() {
 
   const player = players.find((p) => p.id === user?.id);
   useEffect(() => {
+    if (!player) return;
+    if (answerCards.length !== 0) return;
     const handCards = player!.cards.map(
       (cardID) => cards.answer.find((card) => card.id === cardID)!
     );
     setPromptCard(cards.prompt.find((card) => card.id === gameState?.promptCard));
     setAnswerCards(handCards);
-  }, []);
+  }, [player?.cards]);
 
   const handleCardPlay = (id: string) => {
     setSelectedCard((prev) => [...prev, id]);

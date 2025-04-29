@@ -265,6 +265,10 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       if (users.value.some((u) => u.id === conn.peer)) {
         connections.value = connections.value.filter((c) => c.peer !== conn.peer);
         users.value = users.value.filter((u) => u.id !== conn.peer);
+        players.value = players.value.filter((p) => p.id !== conn.peer);
+        gameState.value.answerCards = gameState.value.answerCards.filter(
+          (card) => card.playerID !== conn.peer
+        );
 
         handleSendMessage(`${conn.metadata.name} has left the lobby`, true);
         handleSendObject({
