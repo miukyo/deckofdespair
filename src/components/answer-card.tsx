@@ -30,7 +30,7 @@ export default function AnswerCard({
       disabled={isDisabled || isPlayed}
       animate={!isFlipped}
       hoverEffect={!isDisabled}
-      footer="Deck of Despair"
+      footer="Deck of Disorder"
       className={isPlayed && !isFlipped ? "opacity-0 transform -translate-y-20" : ""}>
       <div className={`font-bold w-full leading-none ${textSizeClass}`}>{text}</div>
     </Card>

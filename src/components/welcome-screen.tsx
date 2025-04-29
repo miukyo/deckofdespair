@@ -267,7 +267,10 @@ export default function WelcomeScreen() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}>
-        Give support to the project <a className="text-blue-500" href="https://github.com/miukyo/deckofdespair">here</a>
+        Give support to the project{" "}
+        <a className="text-blue-500" href="https://github.com/miukyo/deckofdisorder">
+          here
+        </a>
       </motion.div>
     </div>
   );

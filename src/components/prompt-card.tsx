@@ -33,16 +33,23 @@ export default function PromptCard({ promptCard }: { promptCard: CardT }) {
   };
 
   // Determine text size based on content length
-  const textSizeClass = promptCard.text?.length > 100 ? "text-lg" : promptCard.text?.length > 50 ? "text-xl" : "text-2xl";
+  const textSizeClass =
+    promptCard.text?.length > 100
+      ? "text-lg"
+      : promptCard.text?.length > 50
+      ? "text-xl"
+      : "text-2xl";
 
   return (
     <Card
       type="prompt"
       animate={true}
-      header="Deck of Despair"
+      header="Deck of Disorder"
       footer={`Pick ${promptCard.minPick || 1}`}
       hoverEffect={false}>
-      <div className={textSizeClass + " font-bold text-center mt-8"}>{processText(promptCard.text)}</div>
+      <div className={textSizeClass + " font-bold text-center mt-8"}>
+        {processText(promptCard.text)}
+      </div>
     </Card>
   );
 }

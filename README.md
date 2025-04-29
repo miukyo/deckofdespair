@@ -1,8 +1,8 @@
-<img src="https://github.com/miukyo/deckofdespair/blob/main/public/banner.jpg?raw=true" alt="Deck of Despair Logo"/>
+<img src="https://github.com/miukyo/deckofdisorder/blob/main/public/banner.jpg?raw=true" alt="Deck of Disorder Logo"/>
 
-# Deck of Despair
+# Deck of Disorder
 
-Deck of Despair is a hilarious and outrageous party card game inspired by Cards Against Humanity. This game is designed to bring laughter and fun to your gatherings with a unique twist that sets it apart from other party games.
+Deck of Disorder is a hilarious and outrageous party card game inspired by Cards Against Humanity. This game is designed to bring laughter and fun to your gatherings with a unique twist that sets it apart from other party games.
 
 ## Features
 - A web-based card game that you can play with friends.
@@ -24,7 +24,7 @@ Under the following terms:
 Special thanks to [https://crhallberg.com/cah/](https://crhallberg.com/cah/) for providing the card data used in this game.
 
 ## How to Play
-1. Visit the website: [Deck of Despair](https://dod.miukyo.my.id/).
+1. Visit the website: [Deck of Disorder](https://dod.miukyo.my.id/).
 2. Gather your friends and start playing.
 3. Create the funniest and most outrageous combinations to win!
 
@@ -37,4 +37,4 @@ If you enjoy the game and would like to support its development, consider buying
 
 
 ## Disclaimer
-Deck of Despair is intended for mature audiences and contains humor that may not be suitable for everyone. Play responsibly and have fun!
+Deck of Disorder is intended for mature audiences and contains humor that may not be suitable for everyone. Play responsibly and have fun!
