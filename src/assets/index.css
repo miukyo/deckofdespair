@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Rubik";
+  src: url("Rubik.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Modak";
+  src: url("Modak.ttf") format("truetype");
+}
+
+@theme {
+  --default-font-family: "Rubik", sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-neutral-950 tracking-tight;
+  }
+
+  * {
+    @apply antialiased;
+    &::-webkit-scrollbar {
+      @apply hidden;
+    }
+  }
+  
+}
+@layer components {
+  .font-display {
+    font-family: "Modak", sans-serif;
+  }
+}
+@layer utilities {
+  .select-noneall {
+    & * {
+      @apply select-none;
+    }
+  }
+}

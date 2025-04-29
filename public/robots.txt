@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Crawl-delay: 10
+
+# Prevent crawling of specific folders if needed
+# Disallow: /admin/
+# Disallow: /private/
+# Disallow: /assets/temp/
