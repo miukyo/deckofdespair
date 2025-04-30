@@ -21,7 +21,9 @@ Under the following terms:
 - **ShareAlike**: If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 
 ## Credits
-Special thanks to [https://crhallberg.com/cah/](https://crhallberg.com/cah/) for providing the card data used in this game.
+Special thanks to [https://crhallberg.com/cah/](https://crhallberg.com/cah/) for providing the card data used in this game.  
+
+This game is inspired by the popular party game [Cards Against Humanity](https://www.cardsagainsthumanity.com). All rights to Cards Against Humanity belong to their respective creators.
 
 ## How to Play
 1. Visit the website: [Deck of Disorder](https://dod.miukyo.my.id/).
