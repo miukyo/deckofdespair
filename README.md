@@ -1,4 +1,4 @@
-<img src="https://dod.miukyo.my.id/banner.jpg" alt="Deck of Disorder Logo"/>
+<a href="https://dod.miukyo.my.id/"><img src="https://dod.miukyo.my.id/banner.jpg" alt="Deck of Disorder Logo"/></a>
 
 # Deck of Disorder
 
