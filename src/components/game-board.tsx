@@ -222,7 +222,7 @@ export default function GameBoard() {
           </div>
         </Panel>
 
-        <div className="flex flex-wrap mt-8 gap-3">
+        <div className="flex flex-wrap justify-center mt-8 gap-3">
           {answerCards.map(
             (card) =>
               !selectedCard.includes(card.id) && (
