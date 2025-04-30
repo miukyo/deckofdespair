@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Route, useLocation } from "wouter";
 import LobbyScreen from "./components/lobby-screen";
 import WelcomeScreen from "./components/welcome-screen";
+import DevMenu from "./components/ui/devMenu";
 
 function App() {
   const [_, navigate] = useLocation();
@@ -23,6 +24,7 @@ function App() {
       <Route path="/game">
         <GameBoard />
       </Route>
+      {import.meta.env.DEV && <DevMenu />}
     </main>
   );
 }

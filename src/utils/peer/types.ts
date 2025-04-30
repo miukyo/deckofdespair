@@ -1,4 +1,5 @@
 import Peer, { DataConnection } from "peerjs";
+import { Signal } from "@preact-signals/safe-react";
 
 export type User = {
   id: string;
@@ -58,9 +59,11 @@ export interface Player {
 export type PeerContextType = {
   peer: Peer | null;
   users: User[];
+  conn: DataConnection[];
   user: User | null;
   players: Player[];
   cards: Cards;
+  time: Signal<number>;
   messages: Message[];
   stream: MediaStream | null;
   isHost: boolean;
@@ -73,5 +76,4 @@ export type PeerContextType = {
   handleSendMessage: (text: string, isSystem?: boolean) => void;
   handleSendObject: (data: any, includeHost?: boolean, conn?: DataConnection) => void;
   handleCreateLobby: (name: string) => void;
-  handleKick: (id: string) => void;
 };

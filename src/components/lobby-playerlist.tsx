@@ -7,9 +7,12 @@ import Button from "./ui/button";
 import Badge from "./ui/badge";
 
 export default function LobbyPlayerList() {
-  const { isHost, users, user, handleSendObject, handleKick, gameSettings } = usePeer();
+  const { isHost, users, user, handleSendObject, gameSettings, conn } = usePeer();
   const emptySlots = Math.max(0, gameSettings.maxPlayers - users.length);
 
+  const handleKick = (id: string) => {
+    handleSendObject({ type: "kick" }, false, conn.find((c) => c.peer === id));
+  };
 
   return (
     <div>

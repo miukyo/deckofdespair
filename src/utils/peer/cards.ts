@@ -1,5 +1,5 @@
 import { Cards } from "./types";
-import index from "../../../cards/index.json";
+import index from "../../../cards/editionsindex.json";
 import { type CardEditionsT } from "../../../cards/editions";
 
 export const getCards = async (edition: CardEditionsT = "CAH Base Set") => {

@@ -4,7 +4,7 @@ const path = require("path");
 // Path to the source JSON file
 const sourcePath = path.join(__dirname, "..", "cards", "cah-cards-full.json");
 // Output directory for separated files
-const outputDir = path.join(__dirname, "..", "cards", "editions");
+const outputDir = path.join(__dirname, "..", "public", "editions");
 
 // Function to ensure directory exists
 function ensureDirectoryExists(directory) {
@@ -57,10 +57,10 @@ async function separateEditions() {
       official: edition.official,
     }));
 
-    fs.writeFileSync(path.join(outputDir, "../index.json"), JSON.stringify(index));
+    fs.writeFileSync(path.join(outputDir, "../../cards/editionsindex.json"), JSON.stringify(index));
     console.log("Created editions index file");
     fs.writeFileSync(
-      path.join(outputDir, "../editions.ts"),
+      path.join(outputDir, "../../cards/editions.ts"),
       `export type CardEditionsT = ${editionsName};\nexport const CardEditions = [${editionsName.replaceAll("|", ",").trim()}];`
     );
     console.log("Created editions type file");

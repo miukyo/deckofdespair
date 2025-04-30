@@ -15,12 +15,11 @@ import { Card } from "../utils/peer/types";
 import Modal from "./ui/modal";
 
 export default function GameBoard() {
-  const { handleSendObject, isHost, players, cards, user, gameState, gameSettings, round } =
+  const { handleSendObject, isHost, players, cards, user, gameState, gameSettings, round, time } =
     usePeer();
   const [selectedCard, setSelectedCard] = useState<string[]>([]);
   const [promptCard, setPromptCard] = useState<Card | undefined>(undefined);
   const [answerCards, setAnswerCards] = useState<Card[]>([]);
-  const [time, setTime] = useState(60);
 
   const player = players.find((p) => p.id === user?.id);
   useEffect(() => {
@@ -77,27 +76,26 @@ export default function GameBoard() {
     const handCards = player!.cards.map(
       (cardID) => cards.answer.find((card) => card.id === cardID)!
     );
-    setTime(gameSettings?.roundTime);
+    time.value = gameSettings?.roundTime;
     setSelectedCard([]);
     setPromptCard(cards.prompt.find((card) => card.id === gameState?.promptCard));
     setAnswerCards(handCards);
     const i = setInterval(() => {
-      setTime((prev) => {
-        if (prev === 0) {
-          return 0;
-        }
-        return prev - 1;
-      });
+      if (time.value === 0) {
+        clearInterval(i);
+        return;
+      }
+      time.value = time.value - 1;
     }, 1000);
 
     return () => clearInterval(i);
   }, [round]);
 
   useEffect(() => {
-    if (time === 0 && isHost) {
+    if (time.value === 0 && isHost) {
       handleSendObject({ type: "gameState", gameState: { ...gameState, isChoosing: true } }, true);
     }
-  }, [time]);
+  }, [time.value]);
 
   return (
     <div className="max-w-screen grid grid-cols-1 lg:grid-cols-4 gap-6 select-noneall">

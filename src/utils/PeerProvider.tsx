@@ -30,9 +30,11 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
   const users = useSignal<User[]>([]);
   const user = useSignal<User | null>(null);
   const messages = useSignal<Message[]>([]);
+  const isKicked = useSignal<boolean>(false);
 
   // ===== GAME STATE =====
   const [round, setRound] = useState(0);
+  const time = useSignal<number>(60);
   const isChoosing = useSignal<boolean>(false);
   const players = useSignal<Player[]>([]);
   const cards = useSignal<Cards>({
@@ -46,7 +48,7 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
     roundTime: 30,
   });
   const gameState = useSignal<GameState>({
-    round: 1,
+    round: 0,
     czar: "",
     promptCard: "",
     answerCards: [],
@@ -56,6 +58,9 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
     timestamp: Date.now(),
   });
   const gameHistory = useSignal<GameState[]>([]);
+
+  // Temporary state to store data for disconnected players
+  const tempState = new Map<string, Player>();
 
   // ===== UTILITY FUNCTIONS =====
 
@@ -75,7 +80,7 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       roundTime: 30,
     };
     gameState.value = {
-      round: 1,
+      round: 0,
       czar: "",
       promptCard: "",
       answerCards: [],
@@ -203,7 +208,9 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
             false,
             conn
           );
+          isKicked.value = true;
           conn.close();
+          isKicked.value = false;
           return;
         }
 
@@ -220,7 +227,9 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
             false,
             conn
           );
+          isKicked.value = true;
           conn.close();
+          isKicked.value = false;
           return;
         }
 
@@ -230,6 +239,57 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
           ...users.value,
           { id: conn.peer, name: conn.metadata.name, isHost: false, isReady: false },
         ]);
+
+        const existingPlayer = tempState.get(conn.peer);
+        if (existingPlayer) {
+          handleSendObject(0, false, conn);
+          // Restore user data from tempState
+          handleSendObject(
+            {
+              type: "history",
+              messages: messages.value,
+              users: users.value,
+            },
+            false,
+            conn
+          );
+          handleSendObject(
+            {
+              type: "gameSettings",
+              settings: gameSettings.value,
+            },
+            false,
+            conn
+          );
+          handleSendObject(
+            {
+              type: "gameSync",
+              players: [...players.value, existingPlayer],
+              gameState: gameState.value,
+            },
+            true
+          );
+          handleSendObject(
+            {
+              type: "toast",
+              message: `${conn.metadata.name} reconnected`,
+              mode: "success",
+            },
+            true
+          );
+
+          handleSendObject(
+            {
+              type: "syncTime",
+              time: time.value,
+            },
+            true
+          );
+
+          // Clear tempState for this user after restoring
+          tempState.delete(conn.peer);
+          return;
+        }
 
         // Send current state to new user
         handleSendObject({
@@ -264,11 +324,15 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       console.log("Connection closed with", conn.peer);
       if (users.value.some((u) => u.id === conn.peer)) {
         connections.value = connections.value.filter((c) => c.peer !== conn.peer);
+
+        // Move data to tempState for this user
+        const playerToStore = players.value.find((u) => u.id === conn.peer);
+        if (playerToStore) {
+          tempState.set(conn.peer, playerToStore);
+        }
+
         users.value = users.value.filter((u) => u.id !== conn.peer);
         players.value = players.value.filter((p) => p.id !== conn.peer);
-        gameState.value.answerCards = gameState.value.answerCards.filter(
-          (card) => card.playerID !== conn.peer
-        );
 
         handleSendMessage(`${conn.metadata.name} has left the lobby`, true);
         handleSendObject({
@@ -318,6 +382,7 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
 
         const lastPing = lastPingTime.value[conn.peer] || 0;
         if (now - lastPing > 10000) {
+          console.log(`Player ${conn.metadata.name} timed out`);
           conn.close();
         }
       });
@@ -362,42 +427,78 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       connectedToID.value = id.replace("DOD-", "");
       lastPingTime.value[conn.peer] = Date.now();
       handleSendObject(1);
+      const check = setInterval(() => {
+        if (gameState.value.round > 0) {
+          let cardComplete = 0;
+          (gameSettings.value.cardPacks as CardEditionsT[]).forEach((edition) => {
+            getCards(edition).then((data) => {
+              if (data) {
+                cards.value = data;
+                cardComplete++;
+                console.log(
+                  "Cards loaded:",
+                  `${cardComplete}/${(gameSettings.value.cardPacks as CardEditionsT[]).length}`
+                );
+                if (cardComplete === (gameSettings.value.cardPacks as CardEditionsT[]).length) {
+                  console.log("move");
+                  navigate("/game");
+                }
+              }
+            });
+          });
+          clearInterval(check);
+        }
+      }, 100);
     });
 
     conn.on("data", (data: any) => {
+      console.log("Received from host:", data);
       if (data === 0) {
         lastPingTime.value[conn.peer] = Date.now();
         handleSendObject(0);
         return;
       }
 
-      console.log("Received from host:", data);
       handleRecieveData(data);
     });
 
     conn.on("close", () => {
-      console.log("Connection closed with host");
-      showToast("Connection lost with the host", "error");
-      navigate("/");
-
       cleanUp();
+      if (!isKicked.value) {
+        navigate("/");
+        showToast("Connection lost with the host, attempting to reconnect...", "error");
+        let attempts = 0;
+        const maxAttempts = 3; // Maximum number of reconnection attempts
+        const reconnecting = setInterval(() => {
+          if (connections.value.length > 0) {
+            clearInterval(reconnecting);
+            return;
+          }
+          if (attempts < maxAttempts) {
+            attempts++;
+            console.log(`Reconnection attempt ${attempts}...`);
+            handleConnect(id, name); // Attempt to reconnect
+          } else {
+            showToast("Failed to reconnect after multiple attempts", "error");
+            navigate("/"); // Redirect to the lobby or home page
+          }
+        }, 1000); // Retry
+      } else {
+        showToast("Connection lost with the host", "error");
+        navigate("/");
+      }
+
+      // attemptReconnect(id, name); // Trigger auto-reconnect
     });
   };
 
-  const handleKick = (id: string) => {
-    const conn = connections.value.find((c) => c.peer === id);
+  const handleKick = () => {
+    const conn = connections.value[0];
     if (!conn) return;
-    showToast(`Kicked ${conn.metadata.name}`, "error");
-    handleSendObject(
-      {
-        type: "toast",
-        message: `You have been kicked!`,
-        mode: "error",
-      },
-      false,
-      conn
-    );
+    showToast(`You've been kicked!`, "error");
+    isKicked.value = true;
     conn.close();
+    isKicked.value = false;
   };
 
   // Communication functions
@@ -451,6 +552,9 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       case "history":
         handleHistoryData(data);
         break;
+      case "kick":
+        handleKick();
+        break;
 
       // ----- Game setup handlers -----
       case "gameSettings":
@@ -472,6 +576,11 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
         break;
 
       // ----- Game state handlers -----
+      case "syncTime":
+        setTimeout(() => {
+          time.value = (data.time - 1) <= 0 ? gameSettings.value.roundTime : data.time - 1;
+        }, 1000);
+        break;
       case "gameSync":
         handleGameSyncData(data);
         break;
@@ -542,54 +651,57 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
 
   // Start game handler
   const handleStartGameData = (data: any) => {
+    let cardComplete = 0;
     (gameSettings.value.cardPacks as CardEditionsT[]).forEach((edition) => {
       getCards(edition).then((data) => {
         if (data) {
           cards.value = data;
-          setRound(1);
-
-          if (isHost.value) {
-            const seed = Math.floor(Math.random() * 1000);
-            handleSendObject(
-              {
-                type: "cardShuffle",
-                seed,
-              },
-              true
-            );
-            users.value.forEach((user, i) => {
-              players.value.push({
-                id: user.id,
-                name: user.name,
-                score: 0,
-                cards: giveCards(10, i * 10) as string[],
+          cardComplete++;
+          if (cardComplete === (gameSettings.value.cardPacks as CardEditionsT[]).length) {
+            if (isHost.value) {
+              const seed = Math.floor(Math.random() * 1000);
+              handleSendObject(
+                {
+                  type: "cardShuffle",
+                  seed,
+                },
+                true
+              );
+              users.value.forEach((user, i) => {
+                players.value.push({
+                  id: user.id,
+                  name: user.name,
+                  score: 0,
+                  cards: giveCards(10, i * 10) as string[],
+                });
               });
-            });
-            gameState.value = {
-              round: 1,
-              czar: players.value[0].id,
-              promptCard: cards.value.prompt[0].id,
-              answerCards: players.value.map((p) => ({ playerID: p.id, cardID: [] })),
-              isChoosing: false,
-              winner: null,
-              overralWinner: "",
-              timestamp: Date.now(),
-            };
+              gameState.value = {
+                round: 1,
+                czar: players.value[0].id,
+                promptCard: cards.value.prompt[0].id,
+                answerCards: players.value.map((p) => ({ playerID: p.id, cardID: [] })),
+                isChoosing: false,
+                winner: null,
+                overralWinner: "",
+                timestamp: Date.now(),
+              };
 
-            handleSendObject({
-              type: "gameSync",
-              players: players.value,
-              gameState: gameState.value,
-              timestamp: Date.now(),
-            });
-          }
-
-          const moveViewI = setInterval(() => {
-            if (players) {
-              navigate("/game");
-              clearInterval(moveViewI);
+              handleSendObject({
+                type: "gameSync",
+                players: players.value,
+                gameState: gameState.value,
+                timestamp: Date.now(),
+              });
             }
-          }, 100);
+
+            const moveViewI = setInterval(() => {
+              if (players) {
+                setRound(1);
+                navigate("/game");
+                clearInterval(moveViewI);
+              }
+            }, 100);
+          }
         }
       });
     });
@@ -783,8 +895,10 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       value={{
         peer,
         users: users.value,
+        conn: connections.value,
         user: user.value,
         round,
+        time: time,
         players: players.value,
         cards: cards.value,
         messages: messages.value,
@@ -798,7 +912,6 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
         handleConnect,
         handleSendObject,
         handleSendMessage,
-        handleKick,
       }}>
       {children}
     </PeerContext.Provider>
