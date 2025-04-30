@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/miukyo/deckofdisorder/refs/heads/main/public/banner.jpg" alt="Deck of Disorder Logo"/>
+<img src="https://dod.miukyo.my.id/banner.jpg" alt="Deck of Disorder Logo"/>
 
 # Deck of Disorder
 
