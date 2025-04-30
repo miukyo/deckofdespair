@@ -43,7 +43,7 @@ export default function Card({
 
   return (
     <motion.div
-      className={`relative ${disabled ? "opacity-50" : ""} ${
+      className={`relative w-fit ${disabled ? "opacity-50" : ""} ${
         onClick && !disabled ? "cursor-pointer" : ""
       }`}
       onHoverStart={() => hoverEffect && !disabled && setIsHovered(true)}

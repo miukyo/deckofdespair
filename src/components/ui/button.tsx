@@ -52,7 +52,7 @@ export default function Button({
   };
 
   return (
-    <div className="relative inline-block">
+    <>
       <motion.button
         className={`${variantClasses[variant]} ${sizeClasses[size]} rounded-lg ${className} ${
           disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
@@ -81,6 +81,6 @@ export default function Button({
           {tooltipText}
         </motion.div>
       )}
-    </div>
+    </>
   );
 }

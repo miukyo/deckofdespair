@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Users, Settings, MessageSquare, Play } from "lucide-react";
+import { Users, Settings, MessageSquare, Play, Check, X } from "lucide-react";
 import LobbyPlayerList from "./lobby-playerlist";
 import LobbyChat from "./lobby-chat";
 import GameSettings from "./game-settings";
@@ -11,7 +11,7 @@ import { useToast } from "./ui/toast";
 
 export default function LobbyScreen() {
   const { showToast } = useToast();
-  const { connectedToID, isHost, users, handleSendObject } = usePeer();
+  const { connectedToID, isHost, users, user, handleSendObject } = usePeer();
   const [activeTab, setActiveTab] = useState<"players" | "chat" | "settings">("players");
   const [isStarting, setIsStarting] = useState(false);
 
@@ -22,15 +22,26 @@ export default function LobbyScreen() {
     handleSendObject({ type: "startGame" }, true);
   };
 
+  const handleReady = () => {
+    if (!user) return;
+    user.isReady = !user.isReady;
+    handleSendObject({
+      type: "ready",
+      id: user?.id,
+      name: user?.name,
+      isReady: user?.isReady,
+    });
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto h-full flex flex-col justify-center">
+    <div className="w-full grow max-w-4xl mx-auto flex flex-col justify-center">
       <motion.div
         className="bg-neutral-900 rounded-xl border border-neutral-700 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}>
         <div className="p-6 border-b border-neutral-700">
-          <div className="flex flex-wrap justify-between items-center gap-4">
+          <div className="flex flex-wrap justify-center md:justify-between items-center gap-4">
             <div>
               <div className="flex items-center">
                 <div className="text-neutral-400 mr-2">Lobby Code:</div>
@@ -63,14 +74,35 @@ export default function LobbyScreen() {
                     ? "Start the game"
                     : "All players must be ready"
                 }
-                className="px-6 py-3">
+                className="px-6 py-3 w-full md:w-fit">
                 Start Game
               </Button>
+            )}
+            {!isHost && (
+              <>
+                {!user?.isReady ? (
+                  <Button
+                    variant="primary"
+                    className="px-6 py-3 bg-green-600 hover:bg-green-700 w-full md:w-fit"
+                    icon={<Check className="w-5 h-5" />}
+                    onClick={handleReady}>
+                    I'm Ready
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    className="px-6 py-3 bg-red-600 hover:bg-red-700 w-full md:w-fit"
+                    icon={<X className="w-5 h-5" />}
+                    onClick={handleReady}>
+                    Not Ready
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
 
-        <div className="flex border-b border-neutral-700">
+        <div className="grid grid-cols-3 border-b border-neutral-700">
           <button
             className={`flex-1 py-3 px-4 flex justify-center items-center gap-2 ${
               activeTab === "players"
@@ -80,9 +112,9 @@ export default function LobbyScreen() {
             onClick={() => setActiveTab("players")}>
             <Users className="w-5 h-5" />
             <span className="font-medium">Players</span>
-            <Badge variant="score" className="text-xs ml-1 px-2 py-1 rounded-full">
+            {/* <Badge variant="score" className="text-xs ml-1 px-2 py-1 rounded-full">
               {users.length}
-            </Badge>
+            </Badge> */}
           </button>
 
           <button
@@ -108,7 +140,7 @@ export default function LobbyScreen() {
           </button>
         </div>
 
-        <div className="p-6 max-h-[40rem] overflow-y-auto">
+        <div className="p-6 max-h-[50vh] overflow-y-scroll">
           <AnimatePresence mode="wait">
             {activeTab === "players" && (
               <motion.div

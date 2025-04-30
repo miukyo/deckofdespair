@@ -12,7 +12,7 @@ function App() {
   }, []);
 
   return (
-    <main className="p-5 w-full h-screen">
+    <main className="p-5 w-full flex min-h-screen">
       <Route path="/">
         <WelcomeScreen />
       </Route>

@@ -46,7 +46,9 @@ export default function PromptCard({ promptCard }: { promptCard: CardT }) {
       animate={true}
       header="Deck of Disorder"
       footer={`Pick ${promptCard.minPick || 1}`}
-      hoverEffect={false}>
+      hoverEffect={false}
+      className="scale-90"
+      >
       <div className={textSizeClass + " font-bold text-center mt-8"}>
         {processText(promptCard.text)}
       </div>

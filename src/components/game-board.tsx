@@ -102,8 +102,8 @@ export default function GameBoard() {
   return (
     <div className="max-w-screen grid grid-cols-1 lg:grid-cols-4 gap-6 select-noneall">
       <div className="lg:col-span-3">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col md:flex-row justify-center md:justify-between  items-stretch md:items-center mb-6 gap-3">
+          <div className="flex items-center gap-3 relative">
             {isHost && (
               <Button
                 icon={<ArrowLeft className="w-5 h-5" />}
@@ -114,16 +114,22 @@ export default function GameBoard() {
               />
             )}
 
-            <Badge variant="default" className="text-2xl font-bold">
+            <Badge variant="default" className="text-lg md:text-2xl font-bold">
               Round {gameState?.round}
             </Badge>
-            <Badge variant="default" className="text-2xl font-bold">
+            <Badge
+              variant="default"
+              className="text-lg absolute right-0 md:static md:text-2xl font-bold">
               {time}s left
             </Badge>
           </div>
 
-          <Badge variant="default" icon={<Crown className="h-5 w-5 text-yellow-400" />}>
-            {players.find((p) => p.id === gameState?.czar)?.name} is the Card Czar
+          <Badge
+            variant="default"
+            className="text-lg"
+            icon={<Crown className="h-5 w-5 text-yellow-400" />}>
+            <span className="font-bold">{players.find((p) => p.id === gameState?.czar)?.name}</span>{" "}
+            is the Card Czar
           </Badge>
         </div>
 
@@ -216,7 +222,7 @@ export default function GameBoard() {
           </div>
         </Panel>
 
-        <div className="flex justify-center gap-3 mt-8 flex-wrap">
+        <div className="flex flex-wrap mt-8 gap-3">
           {answerCards.map(
             (card) =>
               !selectedCard.includes(card.id) && (

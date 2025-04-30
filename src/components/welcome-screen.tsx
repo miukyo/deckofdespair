@@ -72,7 +72,7 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <div className="w-full h-full max-w-md mx-auto flex flex-col justify-center">
+    <div className="w-full grow max-w-md mx-auto flex flex-col justify-center">
       <motion.div
         className="bg-neutral-900 rounded-xl border border-neutral-700 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}

@@ -10,16 +10,6 @@ export default function LobbyPlayerList() {
   const { isHost, users, user, handleSendObject, handleKick, gameSettings } = usePeer();
   const emptySlots = Math.max(0, gameSettings.maxPlayers - users.length);
 
-  const handleReady = () => {
-    if (!user) return;
-    user.isReady = !user.isReady;
-    handleSendObject({
-      type: "ready",
-      id: user?.id,
-      name: user?.name,
-      isReady: user?.isReady,
-    });
-  };
 
   return (
     <div>
@@ -88,27 +78,6 @@ export default function LobbyPlayerList() {
           </motion.div>
         ))}
       </div>
-      {!isHost && (
-        <div className="mt-6 flex justify-center">
-          {!user?.isReady ? (
-            <Button
-              variant="primary"
-              className="px-6 py-3 bg-green-600 hover:bg-green-700"
-              icon={<Check className="w-5 h-5" />}
-              onClick={handleReady}>
-              I'm Ready
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              className="px-6 py-3 bg-red-600 hover:bg-red-700"
-              icon={<X className="w-5 h-5" />}
-              onClick={handleReady}>
-              Not Ready
-            </Button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
