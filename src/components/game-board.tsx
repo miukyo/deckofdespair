@@ -62,6 +62,9 @@ export default function GameBoard() {
   };
 
   const handleChooseWinner = (winner: string) => {
+    const AudioWin = new Audio("/sounds/Button.mp3");
+    AudioWin.volume = 0.5;
+    AudioWin.play();
     handleSendObject(
       {
         type: "chooseWinner",
@@ -95,7 +98,41 @@ export default function GameBoard() {
     if (time.value === 0 && isHost) {
       handleSendObject({ type: "gameState", gameState: { ...gameState, isChoosing: true } }, true);
     }
+    if (time.value <= 5) {
+      const AudioTime = new Audio("/sounds/Tickdown.mp3");
+      AudioTime.volume = 0.5;
+      AudioTime.play();
+    }
+    if (time.value === 0) {
+      const AudioEnd = new Audio("/sounds/Choosing.mp3");
+      AudioEnd.volume = 0.5;
+      AudioEnd.play();
+    }
   }, [time.value]);
+
+  useEffect(() => {
+    if (gameState?.promptCard) {
+      const AudioWin = new Audio("/sounds/GameStart.mp3");
+      AudioWin.volume = 0.3;
+      AudioWin.play();
+    }
+  }, [gameState?.promptCard]);
+
+  useEffect(() => {
+    if (gameState?.winner?.playerID) {
+      const AudioWin = new Audio("/sounds/RoundWin.mp3");
+      AudioWin.volume = 0.5;
+      AudioWin.play();
+    }
+  }, [gameState?.winner?.playerID]);
+
+  useEffect(() => {
+    if (gameState?.overralWinner) {
+      const AudioWin = new Audio("/sounds/GameEnd.mp3");
+      AudioWin.volume = 0.5;
+      AudioWin.play();
+    }
+  }, [gameState?.overralWinner]);
 
   return (
     <div className="max-w-screen grid grid-cols-1 lg:grid-cols-4 gap-6 select-noneall">

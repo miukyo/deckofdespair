@@ -4,6 +4,7 @@ import { Route, useLocation } from "wouter";
 import LobbyScreen from "./components/lobby-screen";
 import WelcomeScreen from "./components/welcome-screen";
 import DevMenu from "./components/ui/devMenu";
+import MusicPlayer from "./components/ui/musicPlayer";
 
 function App() {
   const [_, navigate] = useLocation();
@@ -18,13 +19,13 @@ function App() {
         <WelcomeScreen />
       </Route>
       <Route path="/lobby">
-        <LobbyScreen
-        />
+        <LobbyScreen />
       </Route>
       <Route path="/game">
         <GameBoard />
       </Route>
       {import.meta.env.DEV && <DevMenu />}
+      {/* <MusicPlayer /> */}
     </main>
   );
 }

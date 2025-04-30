@@ -17,6 +17,22 @@ export default function AnswerCard({
 }: AnswerCardProps) {
   const handlePlay = () => {
     if (isDisabled || isPlayed) return;
+
+    const audioContext = new window.AudioContext();
+
+    fetch("/sounds/Button.mp3")
+      .then((response) => response.arrayBuffer())
+      .then((arrayBuffer) => audioContext.decodeAudioData(arrayBuffer))
+      .then((audioBuffer) => {
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.detune.value = Math.random() * 200 - 100; // Random detune between -100 and +100 cents
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.5; // Set volume to 50%
+        source.connect(gainNode).connect(audioContext.destination);
+        source.start();
+      });
+
     if (onPlay) onPlay();
   };
 

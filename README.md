@@ -23,6 +23,8 @@ Under the following terms:
 ## Credits
 Special thanks to [https://crhallberg.com/cah/](https://crhallberg.com/cah/) for providing the card data used in this game.  
 
+Special thanks to [https://ateliermagicae.itch.io/fantasy-ui-sound-effects](https://ateliermagicae.itch.io/fantasy-ui-sound-effects) for providing the sound effects.
+
 This game is inspired by the popular party game [Cards Against Humanity](https://www.cardsagainsthumanity.com). All rights to Cards Against Humanity belong to their respective creators.
 
 ## How to Play

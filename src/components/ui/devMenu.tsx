@@ -13,7 +13,7 @@ const DevMenu = () => {
     });
   };
   return (
-    <div className="fixed bottom-0 right-0 m-2 z-50">
+    <div className="fixed bottom-0 left-0 m-2 z-50">
       <div className="bg-neutral-800 p-2 rounded-lg shadow-lg">
         <div className="flex justify-between items-center">
           <Button
