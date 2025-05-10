@@ -13,8 +13,7 @@ import { usePeer } from "../utils/PeerProvider";
 export default function ChatRoom() {
   const { messages, handleSendMessage, user } = usePeer();
   const [newMessage, setNewMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSend = () => {
     if (newMessage.trim() === "") return;
@@ -30,22 +29,17 @@ export default function ChatRoom() {
   };
 
   useEffect(() => {
-    const element = messageContainerRef.current;
-    if (element) {
-      const rect = element.getBoundingClientRect();
-      const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
-      if (isVisible) {
-        messagesEndRef.current?.scrollIntoView({
-          behavior: "smooth",
-        });
-      }
+    // Scroll chat container to bottom when messages change
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
   }, [messages]);
 
   return (
     <Panel title="Chat" variant="bordered" className="flex flex-col h-[400px]">
-      <div className="flex-1 overflow-y-auto mb-4">
-        <div ref={messageContainerRef} className="space-y-3">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto mb-4 scroll-smooth">
+        <div className="space-y-3">
           {messages.map((message) => (
             <motion.div
               key={message.id}
@@ -75,7 +69,6 @@ export default function ChatRoom() {
               )}
             </motion.div>
           ))}
-          <div ref={messagesEndRef}  />
         </div>
       </div>
 

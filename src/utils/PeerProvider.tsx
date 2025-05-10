@@ -578,7 +578,7 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       // ----- Game state handlers -----
       case "syncTime":
         setTimeout(() => {
-          time.value = (data.time - 1) <= 0 ? gameSettings.value.roundTime : data.time - 1;
+          time.value = data.time - 1 <= 0 ? gameSettings.value.roundTime : data.time - 1;
         }, 1000);
         break;
       case "gameSync":
@@ -789,6 +789,9 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       hideToast("won");
       showToast(`${winner?.name} won the round!`, "success", 5000, "won");
     } else {
+      if (gameState.value.czar === user.value?.id) {
+        gameState.value.isChoosing = false;
+      }
       hideToast("nowin");
       showToast("Time's up!, Czar thinks the cards combo not funny enough", "error", 5000, "nowin");
     }

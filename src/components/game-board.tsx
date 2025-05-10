@@ -24,32 +24,55 @@ export default function GameBoard() {
   const player = players.find((p) => p.id === user?.id);
   useEffect(() => {
     if (!player) return;
-    if (answerCards.length !== 0) return;
-    const handCards = player!.cards.map(
-      (cardID) => cards.answer.find((card) => card.id === cardID)!
-    );
-    setPromptCard(cards.prompt.find((card) => card.id === gameState?.promptCard));
-    setAnswerCards(handCards);
-  }, [player?.cards]);
-
+    // Only update if this isn't a round change (handled by the round useEffect)
+    if (!gameState || round === gameState.round) {
+      const handCards = player.cards.map(
+        (cardID) => cards.answer.find((card) => card.id === cardID)!
+      );
+      setPromptCard(cards.prompt.find((card) => card.id === gameState?.promptCard));
+      setAnswerCards(handCards);
+    }
+  }, [player?.cards, gameState?.promptCard]);
   const handleCardPlay = (id: string) => {
+    // Update selected cards in local state
     setSelectedCard((prev) => [...prev, id]);
+
+    // Add the card to the game state's answer cards
     gameState!.answerCards.find((e) => e.playerID === player?.id)!.cardID.push(id);
+
+    // Remove the card from the player's hand
     player!.cards = player!.cards.filter((cardID) => cardID !== id);
+
+    // Update the answer cards display immediately
+    setAnswerCards((prev) => prev.filter((card) => card.id !== id));
+
+    // Sync with other players
     handleSendObject({
       type: "gameSync",
       gameState: { ...gameState, answerCards: gameState!.answerCards },
       players: players,
     });
   };
-
   const handleCardCancel = (id: string) => {
+    // Remove from selected cards
     setSelectedCard(selectedCard.filter((c) => c !== id));
+
+    // Remove from game state's answer cards
     let ac = gameState!.answerCards.find((e) => e.playerID === player?.id)!.cardID;
     gameState!.answerCards.find((e) => e.playerID === player?.id)!.cardID = ac.filter(
       (cardID) => cardID !== id
     );
+
+    // Add back to player's hand
     player!.cards.push(id);
+
+    // Add the card back to the display
+    const cardToAdd = cards.answer.find((card) => card.id === id);
+    if (cardToAdd) {
+      setAnswerCards((prev) => [...prev, cardToAdd]);
+    }
+
+    // Sync with other players
     handleSendObject({
       type: "gameSync",
       gameState: { ...gameState, answerCards: gameState!.answerCards },
@@ -74,15 +97,17 @@ export default function GameBoard() {
       true
     );
   };
-
   useEffect(() => {
-    const handCards = player!.cards.map(
+    if (!player) return;
+
+    const handCards = player.cards.map(
       (cardID) => cards.answer.find((card) => card.id === cardID)!
     );
     time.value = gameSettings?.roundTime;
     setSelectedCard([]);
     setPromptCard(cards.prompt.find((card) => card.id === gameState?.promptCard));
     setAnswerCards(handCards);
+
     const i = setInterval(() => {
       if (time.value === 0) {
         clearInterval(i);
