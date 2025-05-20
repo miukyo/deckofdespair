@@ -58,6 +58,7 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
     timestamp: Date.now(),
   });
   const gameHistory = useSignal<GameState[]>([]);
+  const timeOffset = useSignal<number>(0); // Track time difference between host and client
 
   // Temporary state to store data for disconnected players
   const tempState = new Map<string, Player>();
@@ -370,6 +371,27 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
     return () => clearInterval(interval);
   }, [connections.value, isHost.value]);
 
+  // Host time synchronization
+  useEffect(() => {
+    if (!isHost.value || players.value.length === 0) return;
+
+    const interval = setInterval(() => {
+      // Only send time updates when a game is in progress
+      if (gameState.value.round > 0) {
+        handleSendObject(
+          {
+            type: "timeSync",
+            serverTime: time.value,
+            timestamp: Date.now(),
+          },
+          true
+        );
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isHost.value, gameState.value.round, players.value.length]);
+
   // Client keepalive check
   useEffect(() => {
     if (isHost.value) return;
@@ -581,6 +603,9 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
           time.value = data.time - 1 <= 0 ? gameSettings.value.roundTime : data.time - 1;
         }, 1000);
         break;
+      case "timeSync":
+        handleTimeSyncData(data);
+        break;
       case "gameSync":
         handleGameSyncData(data);
         break;
@@ -659,6 +684,19 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
           cardComplete++;
           if (cardComplete === (gameSettings.value.cardPacks as CardEditionsT[]).length) {
             if (isHost.value) {
+              // Initialize the game timer
+              time.value = gameSettings.value.roundTime;
+              
+              // Send initial time sync to all clients
+              handleSendObject(
+                {
+                  type: "timeSync",
+                  serverTime: time.value,
+                  timestamp: Date.now(),
+                },
+                true
+              );
+              
               const seed = Math.floor(Math.random() * 1000);
               handleSendObject(
                 {
@@ -685,7 +723,6 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
                 overralWinner: "",
                 timestamp: Date.now(),
               };
-
               handleSendObject({
                 type: "gameSync",
                 players: players.value,
@@ -693,7 +730,6 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
                 timestamp: Date.now(),
               });
             }
-
             const moveViewI = setInterval(() => {
               if (players) {
                 setRound(1);
@@ -732,8 +768,8 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
   // Game state handler
   const handleGameStateData = (data: any) => {
     gameState.value = data.gameState;
-    if (data.gameState.isChoosing) isChoosing.value = data.gameState.isChoosing;
     if (data.gameState.isChoosing) {
+      isChoosing.value = data.gameState.isChoosing;
       showToast(
         "Time's up!, Czar will choose the funniest card combo in 10s",
         "success",
@@ -795,7 +831,6 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
       hideToast("nowin");
       showToast("Time's up!, Czar thinks the cards combo not funny enough", "error", 5000, "nowin");
     }
-
     gameHistory.value = [...gameHistory.value, gameState.value];
     isChoosing.value = false;
     if (isHost.value) {
@@ -839,7 +874,6 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
             },
             true
           );
-
           handleSendObject(
             {
               type: "nextRound",
@@ -862,7 +896,6 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
         console.log(player.cards);
         player.cards = [...player.cards, ...giveCards(c, i * c)];
       });
-
       gameState.value = {
         round: gameHistory.value.length,
         czar: setCzar()!,
@@ -890,6 +923,23 @@ export default function PeerProvider({ children }: { children: React.ReactNode }
     showToast("Game cancelled", "error");
     navigate("/lobby");
     players.value = [];
+  };
+
+  // Time sync handler
+  const handleTimeSyncData = (data: any) => {
+    if (isHost.value) return; // Host doesn't need to sync time
+
+    // Calculate network latency (round-trip/2) and adjust time accordingly
+    const receivedTime = Date.now();
+    const latency = Math.floor((receivedTime - data.timestamp) / 2);
+    
+    // Set the synchronized time value
+    time.value = data.serverTime;
+    
+    // Store the time offset for future calculations if needed
+    timeOffset.value = latency;
+    
+    console.log(`Time synchronized with host. Current time: ${time.value}s. Network latency: ${latency}ms`);
   };
 
   // ===== CONTEXT PROVIDER =====

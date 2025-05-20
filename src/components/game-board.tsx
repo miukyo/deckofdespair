@@ -34,6 +34,8 @@ export default function GameBoard() {
     }
   }, [player?.cards, gameState?.promptCard]);
   const handleCardPlay = (id: string) => {
+    if (gameState?.isChoosing) return;
+
     // Update selected cards in local state
     setSelectedCard((prev) => [...prev, id]);
 
@@ -54,6 +56,8 @@ export default function GameBoard() {
     });
   };
   const handleCardCancel = (id: string) => {
+    if (gameState?.isChoosing) return;
+
     // Remove from selected cards
     setSelectedCard(selectedCard.filter((c) => c !== id));
 
